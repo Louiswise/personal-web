@@ -1032,6 +1032,10 @@ button:focus-visible {
   color: var(--foreground-muted);
 }
 
+.ai-demo-chat {
+  min-height: 420px;
+}
+
 .button-small {
   width: fit-content;
   min-height: 40px;
@@ -1387,6 +1391,10 @@ button:focus-visible {
     min-height: 200px;
   }
 
+  .ai-demo-chat {
+    min-height: 360px;
+  }
+
   .toc {
     position: relative;
     top: auto;
@@ -1486,6 +1494,15 @@ button:focus-visible {
   z-index: 80;
 }
 
+.ai-assistant-embedded {
+  bottom: auto;
+  height: 100%;
+  justify-items: stretch;
+  position: relative;
+  right: auto;
+  z-index: 1;
+}
+
 .ai-assistant-toggle {
   align-items: center;
   background: #f5c542;
@@ -1519,6 +1536,19 @@ button:focus-visible {
   transform: translateY(12px);
   transition: opacity 180ms var(--ease-out-expo), transform 180ms var(--ease-out-expo);
   width: min(380px, calc(100vw - 32px));
+}
+
+.ai-assistant-embedded .ai-assistant-panel {
+  bottom: auto;
+  grid-template-rows: auto minmax(210px, 1fr) auto;
+  height: 100%;
+  min-height: 420px;
+  opacity: 1;
+  pointer-events: auto;
+  position: relative;
+  right: auto;
+  transform: none;
+  width: 100%;
 }
 
 .ai-assistant.is-open .ai-assistant-panel {
@@ -1628,6 +1658,12 @@ button:focus-visible {
   .ai-assistant-panel {
     bottom: 68px;
     grid-template-rows: auto minmax(260px, 58vh) auto;
+  }
+
+  .ai-assistant-embedded .ai-assistant-panel {
+    bottom: auto;
+    grid-template-rows: auto minmax(220px, 1fr) auto;
+    min-height: 360px;
   }
 }
 

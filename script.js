@@ -362,10 +362,30 @@ const readDifyAnswer = (payload) => {
 };
 
 const initAiAssistant = () => {
+  const mount = document.querySelector("[data-ai-assistant]");
+  const isEmbedded = Boolean(mount);
   const assistant = document.createElement("section");
-  assistant.className = "ai-assistant";
+  assistant.className = isEmbedded ? "ai-assistant ai-assistant-embedded is-open" : "ai-assistant";
   assistant.setAttribute("aria-label", "AI customer service");
-  assistant.innerHTML = `
+  assistant.innerHTML = isEmbedded
+    ? `
+    <div class="ai-assistant-panel" aria-hidden="false">
+      <div class="ai-assistant-header">
+        <div>
+          <strong>AI 客服</strong>
+          <span>酒店咨询 / 预算 / 行程偏好</span>
+        </div>
+      </div>
+      <div class="ai-assistant-messages" aria-live="polite">
+        <div class="ai-message ai-message-bot">你好，我可以帮你了解酒店代订、预算建议和入住偏好。请直接输入问题。</div>
+      </div>
+      <form class="ai-assistant-form">
+        <textarea name="query" rows="2" placeholder="输入你的问题..." required></textarea>
+        <button type="submit">发送</button>
+      </form>
+    </div>
+  `
+    : `
     <button class="ai-assistant-toggle" type="button" aria-expanded="false" aria-label="Open AI customer service">
       AI
     </button>
@@ -387,7 +407,11 @@ const initAiAssistant = () => {
     </div>
   `;
 
-  document.body.appendChild(assistant);
+  if (mount) {
+    mount.appendChild(assistant);
+  } else {
+    document.body.appendChild(assistant);
+  }
 
   const toggle = assistant.querySelector(".ai-assistant-toggle");
   const close = assistant.querySelector(".ai-assistant-close");
@@ -418,8 +442,13 @@ const initAiAssistant = () => {
     return message;
   };
 
-  toggle.addEventListener("click", () => setOpen(!assistant.classList.contains("is-open")));
-  close.addEventListener("click", () => setOpen(false));
+  if (toggle) {
+    toggle.addEventListener("click", () => setOpen(!assistant.classList.contains("is-open")));
+  }
+
+  if (close) {
+    close.addEventListener("click", () => setOpen(false));
+  }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
