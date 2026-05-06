@@ -364,39 +364,37 @@ const readDifyAnswer = (payload) => {
 const initAiAssistant = () => {
   const mount = document.querySelector("[data-ai-assistant]");
   const isEmbedded = Boolean(mount);
+  const quickQuestions = [
+    "热门酒店套餐有哪些？",
+    "价格包含什么？",
+    "可以升级房型吗？",
+    "如何确认预订？",
+    "有接送机服务吗？"
+  ];
+  const waitingStages = [
+    { after: 0, tone: "正在处理", text: "已收到您的问题，正在为您查询相关信息", hint: "通常需要 5-15 秒" },
+    { after: 1200, tone: "正在处理", text: "正在接收您的咨询", hint: "通常需要 5-15 秒" },
+    { after: 2800, tone: "正在处理", text: "正在整理相关酒店信息", hint: "正在匹配更合适的答复" },
+    { after: 5600, tone: "即将完成", text: "正在核对权益、房型与入住政策", hint: "还需要再核对几秒" },
+    { after: 8500, tone: "查询稍慢", text: "当前查询稍慢，正在继续为您处理", hint: "这个问题需要多核对几秒，感谢您的耐心等待。" },
+    { after: 15000, tone: "查询稍慢", text: "当前响应较慢，您可以继续等待，或稍后重新发送。", hint: "您可以继续等待，或使用下方操作。" },
+    { after: 25000, tone: "可重新生成", text: "仍在等待结果，您可以重新生成或复制刚才的问题。", hint: "如需继续，我会重新为您发起一次查询。" }
+  ];
+  const requestTimeoutMs = 30000;
   const assistant = document.createElement("section");
   assistant.className = isEmbedded ? "ai-assistant ai-assistant-embedded is-open" : "ai-assistant";
   assistant.setAttribute("aria-label", "AI customer service");
-  assistant.innerHTML = isEmbedded
-    ? `
-    <div class="ai-assistant-panel" aria-hidden="false">
+  assistant.innerHTML = `
+    ${isEmbedded ? "" : `<button class="ai-assistant-toggle" type="button" aria-expanded="false" aria-label="Open AI customer service">AI</button>`}
+    <div class="ai-assistant-panel" aria-hidden="${isEmbedded ? "false" : "true"}">
       <div class="ai-assistant-header">
         <div>
           <strong>AI 客服</strong>
           <span>酒店咨询 / 预算 / 行程偏好</span>
         </div>
+        ${isEmbedded ? "" : `<button class="ai-assistant-close" type="button" aria-label="Close AI customer service">x</button>`}
       </div>
-      <div class="ai-assistant-messages" aria-live="polite">
-        <div class="ai-message ai-message-bot">你好，我可以帮你了解酒店代订、预算建议和入住偏好。请直接输入问题。</div>
-      </div>
-      <form class="ai-assistant-form">
-        <textarea name="query" rows="2" placeholder="输入你的问题..." required></textarea>
-        <button type="submit">发送</button>
-      </form>
-    </div>
-  `
-    : `
-    <button class="ai-assistant-toggle" type="button" aria-expanded="false" aria-label="Open AI customer service">
-      AI
-    </button>
-    <div class="ai-assistant-panel" aria-hidden="true">
-      <div class="ai-assistant-header">
-        <div>
-          <strong>AI 客服</strong>
-          <span>酒店咨询 / 预算 / 行程偏好</span>
-        </div>
-        <button class="ai-assistant-close" type="button" aria-label="Close AI customer service">x</button>
-      </div>
+      <div class="ai-quick-questions" aria-label="快捷咨询"></div>
       <div class="ai-assistant-messages" aria-live="polite">
         <div class="ai-message ai-message-bot">你好，我可以帮你了解酒店代订、预算建议和入住偏好。请直接输入问题。</div>
       </div>
@@ -419,6 +417,14 @@ const initAiAssistant = () => {
   const messages = assistant.querySelector(".ai-assistant-messages");
   const form = assistant.querySelector(".ai-assistant-form");
   const input = form.querySelector("textarea");
+  const submitButton = form.querySelector("button");
+  const quickContainer = assistant.querySelector(".ai-quick-questions");
+  const timers = new Set();
+  let activeController = null;
+  let pendingQuery = "";
+  let isSubmitting = false;
+  let shouldStickToBottom = true;
+  let requestSerial = 0;
   let visitorId = window.localStorage.getItem("aiAssistantVisitorId");
 
   if (!visitorId) {
@@ -428,9 +434,26 @@ const initAiAssistant = () => {
 
   const setOpen = (isOpen) => {
     assistant.classList.toggle("is-open", isOpen);
-    toggle.setAttribute("aria-expanded", String(isOpen));
+    if (toggle) toggle.setAttribute("aria-expanded", String(isOpen));
     panel.setAttribute("aria-hidden", String(!isOpen));
     if (isOpen) window.setTimeout(() => input.focus(), 120);
+  };
+
+  const trackTimer = (timer) => {
+    timers.add(timer);
+    return timer;
+  };
+
+  const clearTimers = () => {
+    timers.forEach((timer) => window.clearTimeout(timer));
+    timers.clear();
+  };
+
+  const isNearBottom = () => messages.scrollHeight - messages.scrollTop - messages.clientHeight < 88;
+
+  const scrollToBottom = (force = false) => {
+    if (!force && !shouldStickToBottom) return;
+    messages.scrollTo({ top: messages.scrollHeight, behavior: reduceMotion ? "auto" : "smooth" });
   };
 
   const addMessage = (text, type) => {
@@ -438,8 +461,175 @@ const initAiAssistant = () => {
     message.className = `ai-message ai-message-${type}`;
     message.textContent = text;
     messages.appendChild(message);
-    messages.scrollTop = messages.scrollHeight;
+    scrollToBottom(type === "user");
     return message;
+  };
+
+  const renderQuickQuestions = () => {
+    quickContainer.innerHTML = quickQuestions
+      .map((question) => `<button class="ai-quick-question" type="button">${escapeHtml(question)}</button>`)
+      .join("");
+
+    quickContainer.querySelectorAll(".ai-quick-question").forEach((button) => {
+      button.addEventListener("click", () => {
+        const question = button.textContent.trim();
+        if (question) void submitQuery(question);
+      });
+    });
+  };
+
+  const setQuickQuestionsVisible = (visible) => {
+    quickContainer.classList.toggle("is-collapsed", !visible);
+  };
+
+  const createWaitingMarkup = (stage, showActions = false, query = "") => `
+    <div class="ai-waiting-message" data-waiting-stage>
+      <div class="ai-waiting-topline">
+        <span class="ai-waiting-tone">${escapeHtml(stage.tone)}</span>
+        <span class="ai-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      </div>
+      <p class="ai-waiting-text">${escapeHtml(stage.text)}</p>
+      <div class="ai-waiting-skeleton" aria-hidden="true"><span></span><span></span></div>
+      <div class="ai-soft-progress" aria-hidden="true"><span></span></div>
+      <p class="ai-waiting-hint">${escapeHtml(stage.hint)}</p>
+      ${
+        showActions
+          ? `<div class="ai-message-actions">
+              <button type="button" data-ai-action="retry">重新生成</button>
+              <button type="button" data-ai-action="copy" data-copy-text="${escapeHtml(query)}">复制我的问题</button>
+              <button type="button" data-ai-action="quick">返回快捷咨询</button>
+            </div>`
+          : ""
+      }
+    </div>
+  `;
+
+  const bindMessageActions = (message, query) => {
+    message.querySelectorAll("[data-ai-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.dataset.aiAction;
+        if (action === "retry") {
+          if (activeController) activeController.abort();
+          void submitQuery(query, { retry: true });
+        }
+        if (action === "copy") {
+          navigator.clipboard?.writeText(query).catch((error) => console.warn("Copy failed", error));
+        }
+        if (action === "quick") {
+          setQuickQuestionsVisible(true);
+          quickContainer.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+        }
+      });
+    });
+  };
+
+  const updateWaitingMessage = (message, stage, query) => {
+    if (!message || message.dataset.state !== "waiting") return;
+    message.classList.remove("is-stage-changing");
+    void message.offsetWidth;
+    message.classList.add("is-stage-changing");
+    message.innerHTML = createWaitingMarkup(stage, stage.after >= 25000, query);
+    bindMessageActions(message, query);
+    scrollToBottom();
+  };
+
+  const startWaitingStages = (message, query) => {
+    waitingStages.forEach((stage) => {
+      trackTimer(window.setTimeout(() => updateWaitingMessage(message, stage, query), stage.after));
+    });
+  };
+
+  const setLoading = (loading) => {
+    isSubmitting = loading;
+    input.setAttribute("aria-busy", String(loading));
+    submitButton.disabled = loading;
+    submitButton.classList.toggle("is-loading", loading);
+    submitButton.textContent = loading ? "处理中" : "发送";
+  };
+
+  const showErrorMessage = (message, query) => {
+    message.dataset.state = "error";
+    message.classList.add("ai-message-error");
+    message.innerHTML = `
+      <strong>抱歉，当前响应有些慢</strong>
+      <p>您可以重新生成一次，我会重新为您查询。</p>
+      <div class="ai-message-actions">
+        <button type="button" data-ai-action="retry">重新生成</button>
+      </div>
+    `;
+    bindMessageActions(message, query);
+    scrollToBottom(true);
+  };
+
+  const submitQuery = async (query, options = {}) => {
+    query = query.trim();
+    if (!query) return;
+    if (isSubmitting && query === pendingQuery && !options.retry) return;
+    if (isSubmitting && !options.retry) return;
+
+    if (activeController) {
+      activeController.abort();
+      activeController = null;
+    }
+
+    clearTimers();
+    pendingQuery = query;
+    shouldStickToBottom = true;
+    setQuickQuestionsVisible(false);
+
+    if (!options.retry) addMessage(query, "user");
+
+    input.value = "";
+    setLoading(true);
+
+    const pendingMessage = addMessage("", "bot");
+    pendingMessage.dataset.state = "waiting";
+    updateWaitingMessage(pendingMessage, waitingStages[0], query);
+    startWaitingStages(pendingMessage, query);
+
+    activeController = new AbortController();
+    const requestId = ++requestSerial;
+    const timeout = trackTimer(window.setTimeout(() => activeController?.abort(), requestTimeoutMs));
+
+    try {
+      const response = await fetch("/api/dify/workflow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: activeController.signal,
+        body: JSON.stringify({
+          inputs: { query },
+          response_mode: "blocking",
+          user: visitorId
+        })
+      });
+
+      if (!response.ok) throw new Error(`Dify API ${response.status}`);
+      const payload = await response.json();
+      if (requestId !== requestSerial) return;
+      clearTimers();
+      pendingMessage.dataset.state = "done";
+      pendingMessage.classList.remove("is-stage-changing");
+      pendingMessage.textContent = readDifyAnswer(payload);
+      scrollToBottom(true);
+    } catch (error) {
+      if (requestId !== requestSerial) return;
+      clearTimers();
+      if (error.name === "AbortError") {
+        console.warn("AI assistant request aborted or timed out", error);
+      } else {
+        console.error(error);
+      }
+      showErrorMessage(pendingMessage, query);
+    } finally {
+      window.clearTimeout(timeout);
+      timers.delete(timeout);
+      if (requestId === requestSerial) {
+        activeController = null;
+        pendingQuery = "";
+        setLoading(false);
+        window.setTimeout(() => input.focus(), 100);
+      }
+    }
   };
 
   if (toggle) {
@@ -456,44 +646,58 @@ const initAiAssistant = () => {
       mount.hidden = false;
       inlineTrigger.hidden = true;
       window.setTimeout(() => input.focus(), 120);
+      scrollToBottom(true);
     });
   }
 
-  form.addEventListener("submit", async (event) => {
+  messages.addEventListener(
+    "scroll",
+    () => {
+      shouldStickToBottom = isNearBottom();
+    },
+    { passive: true }
+  );
+
+  form.addEventListener("submit", (event) => {
     event.preventDefault();
-    const query = input.value.trim();
-    if (!query) return;
+    void submitQuery(input.value);
+  });
 
-    addMessage(query, "user");
-    input.value = "";
-    input.disabled = true;
-    const submitButton = form.querySelector("button");
-    submitButton.disabled = true;
-    const pendingMessage = addMessage("正在回复...", "bot");
-
-    try {
-      const response = await fetch("/api/dify/workflow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          inputs: { query },
-          response_mode: "blocking",
-          user: visitorId
-        })
-      });
-
-      if (!response.ok) throw new Error(`Dify API ${response.status}`);
-      const payload = await response.json();
-      pendingMessage.textContent = readDifyAnswer(payload);
-    } catch (error) {
-      pendingMessage.textContent = "暂时无法连接 AI 客服，请稍后再试。";
-      console.error(error);
-    } finally {
-      input.disabled = false;
-      submitButton.disabled = false;
-      input.focus();
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void submitQuery(input.value);
     }
   });
+
+  window.addEventListener("pagehide", () => {
+    clearTimers();
+    activeController?.abort();
+  });
+
+  renderQuickQuestions();
+
+  if (window.location.search.includes("ai_wait_demo=1")) {
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = (url, options) => {
+      if (String(url).includes("/api/dify/workflow")) {
+        return new Promise((resolve) => {
+          window.setTimeout(() => resolve(originalFetch(url, options)), 18000);
+        });
+      }
+      return originalFetch(url, options);
+    };
+  }
+
+  if (window.location.search.includes("ai_fail_demo=1")) {
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = (url, options) => {
+      if (String(url).includes("/api/dify/workflow")) {
+        return Promise.reject(new Error("AI assistant failure demo"));
+      }
+      return originalFetch(url, options);
+    };
+  }
 };
 
 const boot = async () => {
