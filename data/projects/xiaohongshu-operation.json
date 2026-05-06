@@ -1,0 +1,18 @@
+{
+  "id": "redbook",
+  "index": "02",
+  "name": "小红书账号运营",
+  "shortName": "小红书运营",
+  "status": "持续更新",
+  "role": "内容运营",
+  "description": "运营账号“云端出行定制”，把酒店卖点、城市旅行场景和客户常见问题整理成持续内容。",
+  "highlights": [
+    "围绕酒店卖点和旅行场景做选题",
+    "把服务经验转化成客户能理解的内容",
+    "让账号成为信任入口，而不是单次展示"
+  ],
+  "techStack": ["内容策划", "旅行文案", "账号运营"],
+  "links": {
+    "xiaohongshu": "https://www.xiaohongshu.com/user/profile/66a1cd04000000002401f514"
+  }
+}

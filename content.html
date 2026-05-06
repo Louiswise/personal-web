@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="鹿餐溪的经历页面，记录全国酒店业务、小红书运营、AI 创作与个人能力。" />
+    <title>经历与项目 | 鹿餐溪</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-page="content">
+    <div class="custom-cursor" aria-hidden="true">
+      <div class="cursor-burst"></div>
+      <div class="cursor-deer">
+        <span class="antler antler-left"></span>
+        <span class="antler antler-right"></span>
+        <span class="ear ear-left"></span>
+        <span class="ear ear-right"></span>
+        <span class="face"></span>
+        <span class="glasses"></span>
+        <span class="scarf"></span>
+        <span class="cursor-pointer"></span>
+      </div>
+    </div>
+
+    <div class="ambient" aria-hidden="true">
+      <span class="blob blob-primary"></span>
+      <span class="blob blob-secondary"></span>
+      <span class="blob blob-tertiary"></span>
+      <span class="blob blob-bottom"></span>
+    </div>
+
+    <a class="skip-link" href="#main">跳到主要内容</a>
+
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="鹿餐溪首页">
+        <span class="brand-orb" aria-hidden="true"></span>
+        <span data-profile="name">鹿餐溪</span>
+      </a>
+
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="主导航">
+        <a href="index.html">首页</a>
+        <a href="content.html" aria-current="page">经历</a>
+        <a href="#projects">项目</a>
+        <a href="#notes">笔记</a>
+        <a class="nav-cta" data-account-link="email" href="#">联系</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero compact-hero section">
+        <div class="container narrow parallax-hero">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">Experience / Projects / Notes</p>
+            <h1>
+              我的经历不是履历，
+              <span>是持续升级的服务系统。</span>
+            </h1>
+            <p class="lead" data-profile="summary"></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="projects" class="section section-bordered">
+        <div class="container content-layout">
+          <aside class="toc spotlight-card reveal" aria-label="内容目录">
+            <p class="eyebrow">Index</p>
+            <a href="#resume-cards">公开履历卡片</a>
+            <a href="#hotel">全国酒店业务</a>
+            <a href="#redbook">小红书运营</a>
+            <a href="#ai">AI 创作项目</a>
+            <a href="#notes">能力笔记</a>
+          </aside>
+
+          <div class="article-flow">
+            <section id="resume-cards" class="resume-card-section reveal">
+              <div class="section-heading compact-heading">
+                <p class="eyebrow">Public Resume Cards</p>
+                <h2>公开版履历，只展示适合被看见的部分。</h2>
+                <p>这里不会直接展示原始简历，也不会放手机号、学校名称、证件信息或其他隐私内容。后续后台只需要编辑这些卡片字段。</p>
+              </div>
+              <div class="resume-card-grid" data-render="resume-cards"></div>
+            </section>
+
+            <div data-render="articles"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="notes" class="section section-bordered">
+        <div class="container">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Operating Notes</p>
+            <h2>我希望客户感受到的能力。</h2>
+          </div>
+
+          <div class="notes-grid" data-render="notes"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>© 2026 <span data-profile="name">鹿餐溪</span></span>
+      <a href="index.html">返回首页</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

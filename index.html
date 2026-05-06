@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="鹿餐溪的个人网站，展示全国酒店代订、小红书运营和 AI 创作能力。" />
+    <title>鹿餐溪 | 全国酒店代理人 & AI 创作者</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-page="home">
+    <div class="custom-cursor" aria-hidden="true">
+      <div class="cursor-burst"></div>
+      <div class="cursor-deer">
+        <span class="antler antler-left"></span>
+        <span class="antler antler-right"></span>
+        <span class="ear ear-left"></span>
+        <span class="ear ear-right"></span>
+        <span class="face"></span>
+        <span class="glasses"></span>
+        <span class="scarf"></span>
+        <span class="cursor-pointer"></span>
+      </div>
+    </div>
+
+    <div class="ambient" aria-hidden="true">
+      <span class="blob blob-primary"></span>
+      <span class="blob blob-secondary"></span>
+      <span class="blob blob-tertiary"></span>
+      <span class="blob blob-bottom"></span>
+    </div>
+
+    <a class="skip-link" href="#main">跳到主要内容</a>
+
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="鹿餐溪首页">
+        <span class="brand-orb" aria-hidden="true"></span>
+        <span data-profile="name">鹿餐溪</span>
+      </a>
+
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="主导航">
+        <a href="index.html" aria-current="page">首页</a>
+        <a href="content.html">经历</a>
+        <a href="#capabilities">能力</a>
+        <a href="#ai-demo">AI 客服</a>
+        <a href="#contact">联系</a>
+        <a class="nav-cta" data-account-link="xiaohongshu" href="#" target="_blank" rel="noreferrer">小红书</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero section">
+        <div class="container hero-grid parallax-hero">
+          <div class="hero-copy reveal">
+            <p class="eyebrow" data-profile="title">全国酒店代理人 / 小红书运营 / AI 创作者</p>
+            <h1>
+              用 AI 和内容运营，
+              <span>重构酒店服务表达。</span>
+            </h1>
+            <p class="lead" data-profile="summary"></p>
+            <div class="actions">
+              <a class="button button-primary" href="#ai-demo">试用 AI 客服</a>
+              <a class="button button-primary" href="content.html">查看我的经历</a>
+              <a class="button button-secondary" data-account-link="email" href="#">联系合作</a>
+            </div>
+          </div>
+
+          <aside class="hero-console spotlight-card reveal" data-reveal-delay="120">
+            <div class="console-top">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="metric-row">
+              <span>Service Scope</span>
+              <strong>全国酒店</strong>
+            </div>
+            <div class="metric-row">
+              <span>Content Channel</span>
+              <strong data-account="xiaohongshuName">云端出行定制</strong>
+            </div>
+            <div class="metric-row">
+              <span>Operating Mode</span>
+              <strong>AI + 运营 + 细节执行</strong>
+            </div>
+            <div class="status-line">
+              <span class="pulse-dot"></span>
+              正在把酒店经验沉淀成可复用的服务系统
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="capabilities" class="section section-bordered">
+        <div class="container">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Capability System</p>
+            <h2>客户看到的不是单一代订，而是一整套能力。</h2>
+            <p>酒店业务最终考验的是判断、沟通、内容、执行和持续运营。我把这些能力拆成可以被看见、被验证、被持续优化的模块。</p>
+          </div>
+
+          <div class="bento-grid" data-render="skills"></div>
+        </div>
+      </section>
+
+      <section class="section section-bordered">
+        <div class="container split-layout">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Current Projects</p>
+            <h2>正在推进的三个方向。</h2>
+            <p>这些方向来自真实业务：客户沟通、平台内容和日常执行。它们共同支撑“云端出行定制”的长期运营。</p>
+          </div>
+
+          <div class="project-stack" data-render="home-projects"></div>
+        </div>
+      </section>
+
+      <section id="ai-demo" class="section section-bordered">
+        <div class="container ai-demo-shell ai-demo-compact spotlight-card reveal">
+          <div class="section-heading ai-demo-copy">
+            <p class="eyebrow">AI Service Demo</p>
+            <h2>试用我的 AI 客服小样。</h2>
+            <p>为了控制额度，这里只放一个轻量跳转入口。点击按钮会打开 Dify 测试页面，不会在首页自动加载对话窗口。</p>
+          </div>
+
+          <div class="ai-demo-link-card">
+            <span class="privacy-pill">小样体验</span>
+            <p>建议只输入一个具体问题，例如酒店预算、城市、入住偏好或客服话术，让访客快速看到 AI 客服的能力边界。</p>
+            <a class="button button-primary button-small" href="https://udify.app/workflow/NfvGj8a82fLbuc2Z" target="_blank" rel="noreferrer">打开测试页面</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="section contact-section section-bordered">
+        <div class="container contact-card spotlight-card reveal">
+          <p class="eyebrow">Contact</p>
+          <h2>需要全国酒店代订，或想了解我的运营与 AI 创作能力。</h2>
+          <p>可以通过邮箱联系我，也可以查看小红书账号“云端出行定制”。我希望每一次沟通都清晰、细致、有结果。</p>
+          <div class="actions">
+            <a class="button button-primary" data-account-link="email" href="#">1132953465@qq.com</a>
+            <a class="button button-secondary" data-account-link="xiaohongshu" href="#" target="_blank" rel="noreferrer">访问小红书</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>© 2026 <span data-profile="name">鹿餐溪</span></span>
+      <a href="content.html">查看完整经历</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
