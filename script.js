@@ -450,6 +450,15 @@ const initAiAssistant = () => {
     close.addEventListener("click", () => setOpen(false));
   }
 
+  const inlineTrigger = document.querySelector("[data-ai-inline-trigger]");
+  if (inlineTrigger && mount) {
+    inlineTrigger.addEventListener("click", () => {
+      mount.hidden = false;
+      inlineTrigger.hidden = true;
+      window.setTimeout(() => input.focus(), 120);
+    });
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const query = input.value.trim();

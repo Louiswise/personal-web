@@ -1033,7 +1033,12 @@ button:focus-visible {
 }
 
 .ai-demo-chat {
+  width: 100%;
   min-height: 420px;
+}
+
+.ai-demo-chat[hidden] {
+  display: none;
 }
 
 .button-small {
