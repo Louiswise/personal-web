@@ -344,6 +344,120 @@ const initParallax = () => {
   window.addEventListener("scroll", updateHero, { passive: true });
 };
 
+const readDifyAnswer = (payload) => {
+  const outputs = payload?.data?.outputs || payload?.outputs || {};
+  const candidates = [
+    outputs.response,
+    outputs.responseString,
+    outputs.answer,
+    outputs.text,
+    outputs.result,
+    outputs.output
+  ];
+  const value = candidates.find((item) => typeof item === "string" && item.trim());
+  if (value) return value;
+
+  const firstString = Object.values(outputs).find((item) => typeof item === "string" && item.trim());
+  return firstString || "AI customer service has replied, but the response format needs to be adjusted.";
+};
+
+const initAiAssistant = () => {
+  const assistant = document.createElement("section");
+  assistant.className = "ai-assistant";
+  assistant.setAttribute("aria-label", "AI customer service");
+  assistant.innerHTML = `
+    <button class="ai-assistant-toggle" type="button" aria-expanded="false" aria-label="Open AI customer service">
+      AI
+    </button>
+    <div class="ai-assistant-panel" aria-hidden="true">
+      <div class="ai-assistant-header">
+        <div>
+          <strong>AI 客服</strong>
+          <span>酒店咨询 / 预算 / 行程偏好</span>
+        </div>
+        <button class="ai-assistant-close" type="button" aria-label="Close AI customer service">x</button>
+      </div>
+      <div class="ai-assistant-messages" aria-live="polite">
+        <div class="ai-message ai-message-bot">你好，我可以帮你了解酒店代订、预算建议和入住偏好。请直接输入问题。</div>
+      </div>
+      <form class="ai-assistant-form">
+        <textarea name="query" rows="2" placeholder="输入你的问题..." required></textarea>
+        <button type="submit">发送</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(assistant);
+
+  const toggle = assistant.querySelector(".ai-assistant-toggle");
+  const close = assistant.querySelector(".ai-assistant-close");
+  const panel = assistant.querySelector(".ai-assistant-panel");
+  const messages = assistant.querySelector(".ai-assistant-messages");
+  const form = assistant.querySelector(".ai-assistant-form");
+  const input = form.querySelector("textarea");
+  let visitorId = window.localStorage.getItem("aiAssistantVisitorId");
+
+  if (!visitorId) {
+    visitorId = `visitor-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    window.localStorage.setItem("aiAssistantVisitorId", visitorId);
+  }
+
+  const setOpen = (isOpen) => {
+    assistant.classList.toggle("is-open", isOpen);
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    panel.setAttribute("aria-hidden", String(!isOpen));
+    if (isOpen) window.setTimeout(() => input.focus(), 120);
+  };
+
+  const addMessage = (text, type) => {
+    const message = document.createElement("div");
+    message.className = `ai-message ai-message-${type}`;
+    message.textContent = text;
+    messages.appendChild(message);
+    messages.scrollTop = messages.scrollHeight;
+    return message;
+  };
+
+  toggle.addEventListener("click", () => setOpen(!assistant.classList.contains("is-open")));
+  close.addEventListener("click", () => setOpen(false));
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+
+    addMessage(query, "user");
+    input.value = "";
+    input.disabled = true;
+    const submitButton = form.querySelector("button");
+    submitButton.disabled = true;
+    const pendingMessage = addMessage("正在回复...", "bot");
+
+    try {
+      const response = await fetch("/api/dify/workflow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inputs: { query },
+          response_mode: "blocking",
+          user: visitorId
+        })
+      });
+
+      if (!response.ok) throw new Error(`Dify API ${response.status}`);
+      const payload = await response.json();
+      pendingMessage.textContent = readDifyAnswer(payload);
+    } catch (error) {
+      pendingMessage.textContent = "暂时无法连接 AI 客服，请稍后再试。";
+      console.error(error);
+    } finally {
+      input.disabled = false;
+      submitButton.disabled = false;
+      input.focus();
+    }
+  });
+};
+
 const boot = async () => {
   const siteData = await loadSiteData();
   bindProfile(siteData);
@@ -358,6 +472,7 @@ const boot = async () => {
   initSpotlights();
   initReveal();
   initParallax();
+  initAiAssistant();
 };
 
 boot();
